@@ -19,8 +19,8 @@ To shut down: `docker-compose down`
 
 ## Spec
 
-- Lint: `spectral lint docs/openapi.yaml`
-- View rendered docs: `redoc-cli serve --watch docs/openapi.yaml`
+- Lint: `npm run lint`
+- View rendered docs: `npm run serve-docs`
 
 ## DB
 
