@@ -1,0 +1,11 @@
+on: push
+jobs:
+  host-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm i
+      - run: redoc-cli bundle docs/openapi.yaml --title Khana -o public/index.html
+      - uses: crazy-max/ghaction-github-pages@v2
+        with:
+          build_dir: public

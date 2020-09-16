@@ -1,0 +1,449 @@
+openapi: 3.0.2
+info:
+  title: Khana
+  version: edge
+  description: API for managing food ordering for students and cooks in PESU.
+  contact:
+    name: Neel Kamath
+    email: neelkamathonline@gmail.com
+    url: https://github.com/neelkamath/khana-backend
+  license:
+    name: MIT
+    url: https://github.com/neelkamath/khana-backend/blob/master/LICENSE
+servers:
+  - url: http://localhost
+    description: You'll have to run the server yourself.
+paths:
+  /create-account:
+    post:
+      tags: [ account ]
+      description: Creates an account.
+      operationId: createAccount
+      requestBody:
+        $ref: '#/components/requestBodies/NewAccount'
+      responses:
+        '204':
+          description: The account has been registered.
+        '400':
+          $ref: '#/components/responses/InvalidAccount'
+  /request-access-token:
+    post:
+      tags: [ account ]
+      description: Retrieves the access token for the user.
+      operationId: requestAccessToken
+      requestBody:
+        $ref: '#/components/requestBodies/Login'
+      responses:
+        '200':
+          $ref: '#/components/responses/AccessToken'
+        '400':
+          $ref: '#/components/responses/InvalidLogin'
+  /incomplete-orders:
+    get:
+      tags: [ cook ]
+      operationId: incompleteOrders
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/FoodPoint'
+      description: Returns the orders which haven't been picked up for the specified food point. The user must be a cook
+        to perform this action.
+      responses:
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+        '400':
+          description: The specified food point doesn't exist.
+        '200':
+          $ref: '#/components/responses/IncompleteOrders'
+  /pick-up-order:
+    post:
+      tags: [ cook ]
+      operationId: pickUpOrder
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      description: Sets the order status to `"PICKED_UP"`. The user must be a cook to perform this action.
+      responses:
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+        '400':
+          description: Either the specified order didn't exist, or it's status wasn't `"PREPARING"`.
+        '204':
+          description: Order status updated.
+  /update-menu:
+    post:
+      tags: [ cook ]
+      description: Updates the menu. If the item already exists, it'll be replaced. Otherwise, it'll be created. The
+        user must be a cook to perform this action.
+      operationId: updateMenu
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/MenuUpdate'
+      responses:
+        '204':
+          description: Menu updated.
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+  /read-menu:
+    get:
+      tags: [ student, cook ]
+      description: View the menu for each food point.
+      operationId: readMenu
+      responses:
+        '200':
+          $ref: '#/components/responses/Menu'
+  /order:
+    post:
+      tags: [ student ]
+      description: Create an order. The user must be a student to perform this action.
+      operationId: order
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/Order'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderToken'
+        '400':
+          $ref: '#/components/responses/InvalidOrder'
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+  /orders:
+    get:
+      tags: [ student ]
+      operationId: orders
+      description: The user's orders.
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+        '200':
+          $ref: '#/components/responses/Orders'
+  /prepare-order:
+    post:
+      tags: [ cook ]
+      operationId: prepareOrder
+      security:
+        - bearerAuth: [ ]
+      description: Sets the order's status to `"PREPARED"`. The user must be a cook to perform this operation. The
+        student who ordered will be notified of such.
+      parameters:
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '401':
+          $ref: '#/components/responses/AuthorizationError'
+        '400':
+          description: Either the specified order ID didn't exist, or it's status wasn't `"PREPARING"`.
+        '204':
+          description: Order status updated.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  requestBodies:
+    Order:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Order'
+    MenuUpdate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Item'
+    NewAccount:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NewAccount'
+    Login:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Login'
+  responses:
+    OrderToken:
+      description: The token for the placed order.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OrderToken'
+    InvalidOrder:
+      description: The order couldn't be placed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidOrder'
+    Menu:
+      description: Each item available from each food point.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Menu'
+    IncompleteOrders:
+      description: Pending orders for a particular food point.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IncompleteOrders'
+    AuthorizationError:
+      description: Missing or invalid access token.
+    Orders:
+      description: The user's orders.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Orders'
+    InvalidAccount:
+      description: The account couldn't be created.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidAccount'
+    InvalidLogin:
+      description: The supplied password and email address were invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidLogin'
+    AccessToken:
+      description: Access and refresh tokens.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AccessToken'
+  schemas:
+    OrderToken:
+      type: object
+      properties:
+        token:
+          type: string
+          example: 5f60478890755501733e4f73
+      required: [ token ]
+    InvalidOrder:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: |
+            `"INVALID_ITEM"` refers to the item not existing in the required quantity at the food point.
+          enum: [ NONEXISTENT_FOOD_POINT, INVALID_ITEM ]
+      required: [ reason ]
+    Order:
+      type: object
+      properties:
+        foodPoint:
+          type: string
+          example: APU
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: 507f1f77bcf86cd799439011
+              quantity:
+                type: number
+                minimum: 1
+                format: int
+            required: [ id, quantity ]
+      required: [ foodPoint, items ]
+    Orders:
+      type: object
+      required: [ orders ]
+      properties:
+        orders:
+          type: array
+          items:
+            required: [ token, status, foodPoint, items, price ]
+            properties:
+              token:
+                type: string
+                example: 5f60478890755501733e4f73
+              status:
+                type: string
+                enum: [ PREPARING, PREPARED, PICKED_UP ]
+              foodPoint:
+                type: string
+                enum: [ APU, Engineering Block, Breakfast and Snacks Food Bus, Lunch Food Bus ]
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    quantity:
+                      type: number
+                      format: int
+                      example: 2
+                    price:
+                      type: number
+                      format: float
+                      example: 25
+                      description: The price for a quantity of 1 for this item.
+                    name:
+                      type: string
+                      example: Mexican Sandwich
+                  required: [ quantity, price, name ]
+              price:
+                type: number
+                format: float
+                example: 50
+                description: How much is to be paid.
+    IncompleteOrders:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            required: [ token, status, price, items ]
+            properties:
+              token:
+                type: string
+                example: 507f1f77bcf86cd799439011
+              status:
+                type: string
+                enum: [ PREPARING, PREPARED ]
+              price:
+                type: number
+                format: float
+                example: 50
+                description: Total amount the student must pay.
+              items:
+                type: array
+                items:
+                  type: object
+                  required: [ quantity, name ]
+                  properties:
+                    quantity:
+                      type: number
+                      example: 2
+                      format: int
+                    name:
+                      type: string
+                      example: Mexican Sandwich
+      required: [ orders ]
+    Menu:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+          required:
+      required: [ items ]
+    Item:
+      type: object
+      properties:
+        foodPoint:
+          type: string
+          enum: [ APU, Engineering Block, Breakfast and Snacks Food Bus, Lunch Food Bus ]
+        name:
+          type: string
+          example: Mexican sandwich
+        picUrl:
+          type: string
+          format: url
+          example: https://images.unsplash.com/photo-1528735602780-2552fd46c7af?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2106&q=80
+        quantity:
+          type: number
+          format: int
+          description: For example, 50 Mexican sandwiches are available for sale today.
+          example: 50
+        price:
+          type: number
+          format: float
+          description: Price in INR.
+          example: 25.50
+      required: [ foodPoint, name, price, id, quantity ]
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        foodPoint:
+          type: string
+          enum: [ APU, Engineering Block, Breakfast and Snacks Food Bus, Lunch Food Bus ]
+        name:
+          type: string
+          example: Mexican sandwich
+        picUrl:
+          type: string
+          format: url
+          example: https://images.unsplash.com/photo-1528735602780-2552fd46c7af?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2106&q=80
+        quantity:
+          type: number
+          format: int
+          description: For example, 50 Mexican sandwiches are available for sale today.
+          example: 50
+        price:
+          type: number
+          format: float
+          description: Price in INR.
+          example: 25.50
+      required: [ foodPoint, name, price, id, quantity ]
+    NewAccount:
+      type: object
+      properties:
+        emailAddress:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        role:
+          type: string
+          enum: [ student, cook ]
+      required: [ emailAddress, password, role ]
+    InvalidAccount:
+      type: object
+      properties:
+        reason:
+          type: string
+          description: The email address mustn't be registered, and the password must be at least one character which
+            isn't whitespace.
+          enum: [ EXISTENT_EMAIL_ADDRESS, INVALID_PASSWORD ]
+      required: [ reason ]
+    InvalidLogin:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [ UNREGISTERED_EMAIL_ADDRESS, INCORRECT_PASSWORD ]
+      required: [ reason ]
+    Login:
+      type: object
+      properties:
+        emailAddress:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [ emailAddress, password ]
+    AccessToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Expires in 1 hour.
+      required: [ accessToken ]
+  parameters:
+    FoodPoint:
+      name: food-point
+      in: query
+      schema:
+        type: string
+        enum: [ APU, Engineering Block, Breakfast and Snacks Food Bus, Lunch Food Bus ]
+    OrderId:
+      name: order-id
+      in: query
+      schema:
+        type: string
+        example: 507f1f77bcf86cd799439011

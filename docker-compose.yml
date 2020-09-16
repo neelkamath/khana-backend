@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+    expose: [ 3000 ]
+    ports: [ 80:3000 ]
+    networks: [ db ]
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    environment:
+      MONGO_URL: mongodb://db:27017
+      MONGO_DB_NAME: khana
+      JWT_SECRET: ${JWT_SECRET}
+  db:
+    image: mongo:4.4.0
+    expose: [ 27017 ]
+    networks: [ db ]
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: khana
+    volumes:
+      - type: volume
+        source: db
+        target: /data/db
+networks:
+  db:
+volumes:
+  db:
