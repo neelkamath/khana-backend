@@ -13,7 +13,7 @@
 
 ## Usage
 
-Run the server on http://localhost: `docker-compose up --build -d`
+Run the server on http://localhost: `docker-compose up -d`
 
 To shut down: `docker-compose down`
 

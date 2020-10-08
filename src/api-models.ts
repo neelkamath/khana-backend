@@ -6,12 +6,15 @@ export interface Account {
 
 export type Role = 'student' | 'cook';
 
-export interface MenuItem {
+export interface UpdatedMenuItem {
     readonly foodPoint: FoodPoint;
     readonly name: string;
     readonly picUrl?: string;
     readonly quantity: number;
     readonly price: number;
+}
+
+export interface MenuItem extends UpdatedMenuItem {
     readonly id: string;
 }
 

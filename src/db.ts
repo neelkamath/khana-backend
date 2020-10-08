@@ -13,8 +13,10 @@ import {
     OrderStatus,
     PlacedOrder,
     PlacedOrders,
-    Role
+    Role,
+    UpdatedMenuItem
 } from './api-models';
+import {notifyMenuUpdate, notifyOrder, notifyOrderPickedUp, notifyOrderPrepared} from './ws-api';
 
 export interface User {
     readonly id: string;
@@ -26,7 +28,7 @@ let db: Db;
 
 export async function setUpDb(): Promise<void> {
     if (db !== undefined) return;
-    const client = new MongoClient(process.env.MONGO_URL!);
+    const client = new MongoClient(process.env.MONGO_URL!, {useUnifiedTopology: true});
     await client.connect();
     db = client.db(process.env.MONGO_DB_NAME);
 }
@@ -61,11 +63,12 @@ export async function createUser(account: Account): Promise<void> {
     });
 }
 
-export async function updateMenu(item: MenuItem): Promise<void> {
+export async function updateMenu(item: UpdatedMenuItem): Promise<void> {
     const collection = db.collection('items');
     const filter = {foodPoint: item.foodPoint, name: item.name};
     if (await collection.findOne(filter) === null) await db.collection('items').insertOne(item);
     else await db.collection('items').findOneAndReplace(filter, item);
+    notifyMenuUpdate(item);
 }
 
 export async function readMenu(): Promise<Menu> {
@@ -96,6 +99,7 @@ export async function order(userId: string, order: NewOrder): Promise<string> {
         const doc = await db.collection('items').findOne(filter);
         await db.collection('items').updateOne(filter, {$set: {quantity: doc.quantity - item.quantity}});
     }
+    notifyOrder(userId, order);
     return insertion.insertedId;
 }
 
@@ -135,11 +139,13 @@ export async function readOrderStatus(orderId: string): Promise<OrderStatus> {
 /** Sets the order status of the `orderId` to `'PREPARED'`. */
 export async function prepareOrder(orderId: string): Promise<void> {
     await db.collection('orders').updateOne({_id: new ObjectId(orderId)}, {$set: {status: 'PREPARED'}});
+    notifyOrderPrepared(orderId);
 }
 
 /** Sets the `orderId`'s `status` to `"PICKED_UP"` in the `orders` collection. */
 export async function pickUpOrder(orderId: string): Promise<void> {
     await db.collection('orders').updateOne({_id: new ObjectId(orderId)}, {$set: {status: 'PICKED_UP'}});
+    notifyOrderPickedUp(orderId);
 }
 
 export async function readIncompleteOrders(foodPoint: FoodPoint): Promise<IncompleteOrders> {
