@@ -14,15 +14,15 @@ export function setUpWebSocketApi(app: Express): void {
 }
 
 export function notifyMenuUpdate(item: UpdatedMenuItem): void {
-    notifyUpdate({update: 'MENU_UPDATE', ...item});
+    notifyUpdate({type: 'MENU_UPDATE', ...item});
 }
 
 export function notifyOrder(userId: string, order: NewOrder): void {
-    notifyUpdate({update: 'ORDER', userId, ...order});
+    notifyUpdate({type: 'ORDER', userId, ...order});
 }
 
 export function notifyOrderPrepared(orderId: string): void {
-    notifyUpdate({update: 'ORDER_PREPARED', orderId});
+    notifyUpdate({type: 'ORDER_PREPARED', orderId});
 }
 
 export function notifyOrderPickedUp(orderId: string): void {
