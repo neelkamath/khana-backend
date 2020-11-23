@@ -99,8 +99,9 @@ export async function order(userId: string, order: NewOrder): Promise<string> {
         const doc = await db.collection('items').findOne(filter);
         await db.collection('items').updateOne(filter, {$set: {quantity: doc.quantity - item.quantity}});
     }
-    notifyOrder(userId, order);
-    return insertion.insertedId;
+    const orderId = insertion.insertedId;
+    notifyOrder(userId, orderId, order);
+    return orderId;
 }
 
 /** The `userId` is the `_id` field of the user in the `users` collection. */

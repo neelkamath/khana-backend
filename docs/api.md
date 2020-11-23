@@ -24,6 +24,7 @@ The WebSocket API allows you to receive live updates on ws://localhost/updates. 
 ```json5
 {
   "type": "ORDER",
+  "orderId": "5f7e9f80e7acf001998be5fd", // ID of the order which can now be picked up.
   "userId": "9oi89f80e7a8io98998bb760", // ID of the user who placed this order.
   "foodPoint": "APU", // One of <"APU">, <"Engineering Block">, <"Breakfast and Snacks Food Bus">, <"Lunch Food Bus">
   "items": [

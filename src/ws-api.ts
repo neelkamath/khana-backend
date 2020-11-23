@@ -17,8 +17,8 @@ export function notifyMenuUpdate(item: UpdatedMenuItem): void {
     notifyUpdate({type: 'MENU_UPDATE', ...item});
 }
 
-export function notifyOrder(userId: string, order: NewOrder): void {
-    notifyUpdate({type: 'ORDER', userId, ...order});
+export function notifyOrder(userId: string, orderId: string, order: NewOrder): void {
+    notifyUpdate({type: 'ORDER', userId, orderId, ...order});
 }
 
 export function notifyOrderPrepared(orderId: string): void {
