@@ -135,7 +135,7 @@ function setUpPickUpOrder(app: Express): void {
 }
 
 function setUpIncompleteOrders(app: Express): void {
-    app.post('/incomplete-orders', jwtHandler, async (request, response) => {
+    app.get('/incomplete-orders', jwtHandler, async (request, response) => {
         // @ts-ignore: Property 'user' does not exist on type 'Request'.
         if (request.user.role !== 'cook') {
             response.sendStatus(401);
