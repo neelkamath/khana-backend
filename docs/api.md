@@ -4,7 +4,7 @@
 
 ## WebSocket API Docs
 
-The WebSocket API allows you to receive live updates on ws://localhost/updates. All received messages are JSON serialized as text. The server will ignore any messages you send. Since every update gets sent to every client, you'll need to ignore messages which are irrelevant to the user (e.g., user _U1_ will receive the order updates of user _U2_ in addition to their own). Below are examples of the messages you will receive. Each message will have the field `"type"` which the frontend must use to handle the particular message type accordingly.
+The WebSocket API allows you to receive live updates on ws://localhost/updates. All received messages are JSON serialized as text. Once the connection has opened, send your access token as a text event. The server will ignore any subsequent messages you send. Since every update gets sent to every client, you'll need to ignore messages which are irrelevant to the user (e.g., user _U1_ will receive the order updates of user _U2_ in addition to their own). Below are examples of the messages you will receive. Each message will have the field `"type"` which the frontend must use to handle the particular message type accordingly.
 
 ### Menu Updates
 
