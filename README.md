@@ -1,6 +1,6 @@
 # Khana Backend
 
-[Khana](docs/explanation.md)'s backend API.
+[Khana](docs/explanation.md)'s backend API. Here's a frontend UI for [cooks](https://github.com/neelkamath/khana-cook).
 
 ## Installation
 
